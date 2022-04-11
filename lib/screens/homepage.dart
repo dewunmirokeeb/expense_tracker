@@ -6,6 +6,7 @@ import 'package:expense_tracker/widgets/loadingcircle.dart';
 import 'package:expense_tracker/widgets/topcard.dart';
 import 'package:expense_tracker/widgets/transactioncard.dart';
 import 'package:flutter/material.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -15,8 +16,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _amount = TextEditingController();
-  final _item = TextEditingController();
+  TextEditingController _amount = TextEditingController();
+  TextEditingController _item = TextEditingController();
   final _formkey = GlobalKey<FormState>();
   bool _income = false;
 
@@ -36,20 +37,30 @@ class _HomePageState extends State<HomePage> {
                 height: 200,
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('Expense'),
-                        Switch(
-                            value: _income,
-                            onChanged: (newvalue) {
-                              setState(() {
-                                _income = newvalue;
-                                debugPrint(newvalue.toString());
-                              });
-                            }),
-                        const Text('Income'),
-                      ],
+                    ToggleSwitch(
+                      activeBgColor: const [Colors.green],
+                      initialLabelIndex: 0,
+                      totalSwitches: 2,
+                      labels: const ['expense', 'income'],
+                      onToggle: (index) {
+                        if (index == 0) {
+                          _income = false;
+                        } else {
+                          _income = true;
+                        }
+                      },
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Form(
+                      child: TextFormField(
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'For what',
+                        ),
+                        controller: _item,
+                      ),
                     ),
                     const SizedBox(
                       height: 5,
@@ -71,18 +82,6 @@ class _HomePageState extends State<HomePage> {
                         controller: _amount,
                       ),
                     ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    Form(
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: 'For what',
-                        ),
-                        controller: _item,
-                      ),
-                    )
                   ],
                 ),
               );
@@ -103,7 +102,8 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   if (_formkey.currentState!.validate()) {
                     _entertransaction();
-
+                    _item.text = '';
+                    _amount.text = '';
                     Navigator.of(context).pop();
                   }
                 },
@@ -152,7 +152,7 @@ class _HomePageState extends State<HomePage> {
                   : ListView.builder(
                       itemCount: GoogleSheetApi.currentTransaction.length,
                       itemBuilder: ((context, index) {
-                        return TransactionCard(   
+                        return TransactionCard(
                           transactionname:
                               GoogleSheetApi.currentTransaction[index][0],
                           money: GoogleSheetApi.currentTransaction[index][1],
